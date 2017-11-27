@@ -2,72 +2,45 @@
 # coding: utf-8
 
 # ##### 镜像构建脚本
-
-# In[79]:
-
-
 import docker
 import json
+import os
 client = docker.from_env()
 REGISTRY = "registry.cn-shenzhen.aliyuncs.com/bwin/"
-def login(username="lihong@namiao",password="BpmPortal123",registry="registry.cn-shenzhen.aliyuncs.com"):
+
+
+def login(username="lihong@namiao",
+          password="BpmPortal123",
+          registry="registry.cn-shenzhen.aliyuncs.com"):
     user = username
     pwd = password
     reg = registry
-    #print(user,pwd,reg)
-    login = client.login(username=user,password=pwd,registry=reg)
-    #print (login.get('Status'))
-    #ok = login[u"Status"] == u"Login Succeeded"
-    #return ok
-login() # login to aliyun registry
-login(username="lihongwansui",password="Internet111",registry="https://index.docker.io/v1/") # login to docker hub
+    print(user, pwd, reg)
+    login = client.login(username=user, password=pwd, registry=reg)
+    print(login)
+    ok = login["Status"] == "Login Succeeded"
 
 
-# In[80]:
-
-
-def load_versions():
-    with open('configration.json') as cfg_file:  
+def update_config(current, newVersion):
+    img, reg, ver, fn = current
+    cfg = None
+    with open(os.path.join(fn, 'image.conf'), 'r') as cfg_file:
         cfg = json.load(cfg_file)
-        return cfg
-def update_versions(cfg):
-    with open('configration.json', 'w') as outfile:  
-        json.dump(cfg, outfile)
-        
-versions = load_versions()
-if len(versions) == 0:
-    cfg = {"1":1,"2":1,"3":1,"4":1,"5":1,"6":"1.0"}
-    update_versions(cfg)
-    versions = load_versions()
-    print(versions)
+        cfg["last_version"] = newVersion
+    with open(os.path.join(fn, 'image.conf'), 'w') as cfg_file:
+        json.dump(cfg, cfg_file)
 
 
-# In[81]:
-
-
-print(" \n      1.tomcat7 + jdk8; \n      2.nginx + tomcat7 + jdk8;\n      3.front service; \n      4.trade service; \n      5.wechat service; \n      6.nginx loadbalance for coin \n")
-
-
-# In[88]:
-
-
-choice = input("选择要创建的镜像: ") 
-if choice in versions:
-    print("当前版本号:{}".format(versions[choice]))
-else:
-    print("选择错误！")
-    #exit
-version = input("输入新版本号:")
-
-
-# In[83]:
-
-
-def build_image(image_name,registry,tg,docker_path):
+def build_image(image_name, registry, tg, docker_path):
     build_ok = True
     try:
         print("开始创建-{}-镜像......".format(image_name))
-        image = client.images.build(path=docker_path,tag="{}:{}".format(registry,tg),rm=True,pull=True,quiet=False)
+        image = client.images.build(
+            path=docker_path,
+            tag="{}:{}".format(registry, tg),
+            rm=True,
+            pull=True,
+            quiet=False)
         print("镜像构建完成 -({})".format(image.tag))
     except docker.errors.BuildError as be:
         build_ok = False
@@ -78,72 +51,66 @@ def build_image(image_name,registry,tg,docker_path):
     except TypeError as te:
         build_ok = False
         print("镜像构建错误: {0}".format(te))
-    versions[choice] = tg
-    update_versions(versions)
     return build_ok
 
 
+def run_task(name, registry, version, path):
+    build_ok = build_image(name, registry, version, path)
+    if build_ok:
+        print("构建成功，准备push到镜像仓库......")
+        try:
+            for line in client.images.push(
+                    repository=registry,
+                    tag=version,
+                    stream=True,
+                    auth_config={
+                        "username": "lihong@namiao",
+                        "password": "BpmPortal123"
+                    }):
+                print(line)
+            print("push 完成，请检查push结果。")
+            return True
+        except:
+            print("push 失败！")
+            return False
+    else:
+        return build_ok
 
-# In[87]:
 
+login()  # login to aliyun registry
+login(
+    username="lihongwansui",
+    password="Internet111",
+    registry="https://index.docker.io/v1/")  # login to docker hub
 
-if choice == "1":
-    build_ok = build_image("tomcat_7_jdk8","registry.cn-shenzhen.aliyuncs.com/bwin/tomcat_7_jdk8",version,"./tomcat_7_jdk8")
-    if build_ok:
-        print("构建成功，准备push到镜像仓库......")
-        try:
-            for line in client.images.push(repository="registry.cn-shenzhen.aliyuncs.com/bwin/tomcat_7_jdk8",tag=version,stream=True,auth_config={"username":"lihong@namiao","password":"BpmPortal123"}):
-                print(line)
-            print("push 完成，请检查push结果。")
-        except:
-            print("push 失败！")
-if choice == "2":
-    build_ok = build_image("nginx_tomcat_7_jdk8","registry.cn-shenzhen.aliyuncs.com/bwin/nginx_tomcat",version,"./nginx_tomcat_7_jdk8")
-    if build_ok:
-        print("构建成功，准备push到镜像仓库......")
-        try:
-            for line in client.images.push(repository="registry.cn-shenzhen.aliyuncs.com/bwin/nginx_tomcat",tag=version,stream=True,auth_config={"username":"lihong@namiao","password":"BpmPortal123"}):
-                print(line)
-            print("push 完成，请检查push结果。")
-        except:
-            print("push 失败！")
-if choice == "3":
-    build_ok = build_image("front_service","registry.cn-shenzhen.aliyuncs.com/bwin/front_service",version,"./front_service")
-    if build_ok:
-        print("构建成功，准备push到镜像仓库......")
-        try:
-            for line in client.images.push(repository="registry.cn-shenzhen.aliyuncs.com/bwin/front_service",tag=version,stream=True,auth_config={"username":"lihong@namiao","password":"BpmPortal123"}):
-                print(line)
-            print("push 完成，请检查push结果。")
-        except:
-            print("push 失败！")
-if choice == "4":
-    build_ok = build_image("trade_service","registry.cn-shenzhen.aliyuncs.com/bwin/trade_service",version,"./trade_service")
-    if build_ok:
-        print("构建成功，准备push到镜像仓库......")
-        try:
-            for line in client.images.push(repository="registry.cn-shenzhen.aliyuncs.com/bwin/trade_service",tag=version,stream=True,auth_config={"username":"lihong@namiao","password":"BpmPortal123"}):
-                print(line)
-            print("push 完成，请检查push结果。")
-        except:
-            print("push 失败！")
-if choice == "5":
-    build_ok = build_image("wechat_service","registry.cn-shenzhen.aliyuncs.com/bwin/wechat_service",version,"./wechat_service")
-    if build_ok:
-        print("构建成功，准备push到镜像仓库......")
-        try:
-            for line in client.images.push(repository="registry.cn-shenzhen.aliyuncs.com/bwin/wechat_service",tag=version,stream=True,auth_config={"username":"lihong@namiao","password":"BpmPortal123"}):
-                print(line)
-            print("push 完成，请检查push结果。")
-        except:
-            print("push 失败！")
-if choice == "6":
-    build_ok = build_image("nginx_lb_coin","registry.cn-shenzhen.aliyuncs.com/bwin/nginx_lb_coin",version,"./nginx_lb_coin")
-    if build_ok:
-        print("构建成功，准备push到镜像仓库......")
-        try:
-            for line in client.images.push(repository="registry.cn-shenzhen.aliyuncs.com/bwin/nginx_lb_coin",tag=version,stream=True,auth_config={"username":"lihong@namiao","password":"BpmPortal123"}):
-                print(line)
-            print("push 完成，请检查push结果。")
-        except:
-            print("push 失败！")
+dirs = [
+    fn for fn in os.listdir('.')
+    if os.path.isdir(fn) and os.path.exists(os.path.join(fn, "image.conf"))
+]
+menus = {}
+menu_idx = 1
+for fn in dirs:
+    with open(os.path.join(fn, 'image.conf')) as cfg_file:
+        cfg = json.load(cfg_file)
+        menus[str(menu_idx)] = ((cfg['image'], cfg['registry'],
+                                 cfg['last_version'], fn))
+    menu_idx += 1
+for idx, de in menus.items():
+    img, reg, ver, fn = de
+    print(idx, ":", "[", img, "]", ",当前版本:", ver)
+
+current = None
+choice = input("选择要创建的镜像: ")
+if choice in menus:
+    current = menus[choice]
+    print("当前版本号:{}".format(menus[choice][2]))
+else:
+    print("选择错误！")
+    os._exit(0)
+version = input("输入新版本号:")
+if version:
+    img, reg, ver, fn = current
+    if run_task(img, reg, version, fn):
+        # if True:
+        update_config(current, version)
+        print("制作镜像完成")
