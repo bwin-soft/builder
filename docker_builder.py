@@ -18,7 +18,8 @@ def login(username="lihong@namiao",
     login = client.login(username=user, password=pwd, registry=reg)
     if 'Status' in login:
         ok = login["Status"] == "Login Succeeded"
-    return ok
+        return ok
+    return False
 
 
 def update_config(current, newVersion):
