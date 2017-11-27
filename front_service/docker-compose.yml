@@ -1,0 +1,6 @@
+version: '2'
+services:
+  tomcat:
+    image: 'registry.cn-shenzhen.aliyuncs.com/bwin/wechat_service:1.0'
+    ports:
+      - '8080:8080'

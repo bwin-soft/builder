@@ -15,10 +15,10 @@ def login(username="lihong@namiao",
     user = username
     pwd = password
     reg = registry
-    print(user, pwd, reg)
     login = client.login(username=user, password=pwd, registry=reg)
-    print(login)
-    ok = login["Status"] == "Login Succeeded"
+    if 'Status' in login:
+        ok = login["Status"] == "Login Succeeded"
+    return ok
 
 
 def update_config(current, newVersion):
@@ -77,11 +77,11 @@ def run_task(name, registry, version, path):
         return build_ok
 
 
-login()  # login to aliyun registry
-login(
+print(login())  # login to aliyun registry
+print(login(
     username="lihongwansui",
     password="Internet111",
-    registry="https://index.docker.io/v1/")  # login to docker hub
+    registry="https://index.docker.io/v1/"))  # login to docker hub
 
 dirs = [
     fn for fn in os.listdir('.')
