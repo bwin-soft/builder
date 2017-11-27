@@ -37,7 +37,7 @@ def build_image(image_name, registry, tg, docker_path):
     try:
         print("开始创建-{}-镜像......".format(image_name))
         image = client.images.build(
-            path=docker_path,
+            path=os.path.join('.', docker_path),
             tag="{}:{}".format(registry, tg),
             rm=True,
             pull=True,
