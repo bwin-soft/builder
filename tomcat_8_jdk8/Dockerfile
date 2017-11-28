@@ -123,6 +123,8 @@ RUN set -eux; \
 	\
 	find ./bin/ -name '*.sh' -exec sed -ri 's|^#!/bin/sh$|#!/usr/bin/env bash|' '{}' +
 
+RUN ln -snf /usr/share/zoneinfo/Asia/Chongqing /etc/localtime && echo Asia/Chongqing > /etc/timezone
+
 # verify Tomcat Native is working properly
 RUN set -e \
 	&& nativeLines="$(catalina.sh configtest 2>&1)" \

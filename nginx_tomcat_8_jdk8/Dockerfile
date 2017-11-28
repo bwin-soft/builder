@@ -1,4 +1,4 @@
-FROM registry.cn-shenzhen.aliyuncs.com/bwin/tomcat_7_jdk8:deb_1.0 
+FROM registry.cn-shenzhen.aliyuncs.com/bwin/tomcat_7_jdk8:deb_1.1
 
 LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
 
