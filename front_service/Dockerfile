@@ -1,4 +1,4 @@
-FROM registry.cn-shenzhen.aliyuncs.com/bwin/nginx_tomcat:deb_1.1
+FROM registry.cn-shenzhen.aliyuncs.com/bwin/nginx_tomcat:deb_2.1
 
 COPY nginx.conf /etc/nginx/nginx.conf
 ADD static /home/static
