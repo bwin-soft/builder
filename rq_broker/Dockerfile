@@ -42,6 +42,6 @@ COPY runbroker.sh bin/runbroker.sh
 COPY broker.conf conf/broker.conf
 RUN chmod +x bin/mqbroker
 #CMD cd ${ROCKETMQ_HOME}/bin && export JAVA_OPT=" -Duser.home=/opt" && sh mqbroker -c ${configs} -n ${nameservers}
-CMD cd ${ROCKETMQ_HOME}/bin && export JAVA_OPT=" -Duser.home=/opt" && sh mqbroker -n ${nameservers}
+CMD cd ${ROCKETMQ_HOME}/bin && export JAVA_OPT=" -Duser.home=/opt" && sh mqbroker -c ../conf/broker.conf -n ${nameservers}
 
 EXPOSE 10909 10911
