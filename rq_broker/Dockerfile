@@ -39,9 +39,9 @@ RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}
           && rm rocketmq.zip
 
 COPY runbroker.sh bin/runbroker.sh
-COPY broker.conf conf/broker.conf
+COPY broker.gen bin/broker.gen
 RUN chmod +x bin/mqbroker
 #CMD cd ${ROCKETMQ_HOME}/bin && export JAVA_OPT=" -Duser.home=/opt" && sh mqbroker -c ${configs} -n ${nameservers}
-CMD cd ${ROCKETMQ_HOME}/bin && export JAVA_OPT=" -Duser.home=/opt" && sh mqbroker -c ../conf/broker.conf -n ${nameservers}
+CMD cd ${ROCKETMQ_HOME}/bin && export JAVA_OPT=" -Duser.home=/opt" && sh broker.gen ${BROKERIP1} > ../conf/broker.conf && sh mqbroker -c ../conf/broker.conf -n ${nameservers}
 
 EXPOSE 10909 10911
