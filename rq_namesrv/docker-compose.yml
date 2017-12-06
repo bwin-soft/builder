@@ -1,0 +1,17 @@
+version: '2'
+services:
+  rocketmq_namesrv:
+    restart: always
+    #oom-kill-disable: true
+    image: 'lihongwansui/rq_namesrv:4.1.0'
+    ports:
+      - '9876:9876'
+  rocketmq_broker:
+    restart: always
+    #oom-kill-disable: true
+    image: 'lihongwansui/rq_broker:4.1.1'
+    environment:
+      - nameservers=192.168.1.119:9876
+    ports:
+      - '10909:10909'
+      - '10911:10911'

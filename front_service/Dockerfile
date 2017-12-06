@@ -5,3 +5,4 @@ ADD static /home/static
 COPY trade.war /usr/local/tomcat/webapps/ROOT.war
 
 CMD ["/service.sh"]
+ 
