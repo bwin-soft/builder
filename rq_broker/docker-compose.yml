@@ -2,22 +2,22 @@ version: '2'
 services:
   rocketmq_namesrv:
     extra_hosts:
-      - 'moby:192.168.1.119'
+      - 'moby:192.168.1.149'
     restart: always
     #oom-kill-disable: true
     image: 'lihongwansui/rq_namesrv:4.1.0'
     ports:
       - '9876:9876'
-    #network_mode: "host"
+    network_mode: "host"
   rocketmq_broker:
     extra_hosts:
-      - 'moby:192.168.1.119'
+      - 'moby:192.168.1.149'
     restart: always
     #oom-kill-disable: true
     image: 'lihongwansui/rq_broker:4.1.2'
-    #network_mode: "host"
+    network_mode: "host"
     environment:
-      - nameservers=192.168.1.119:9876
+      - nameservers=192.168.1.149:9876
     ports:
       - '10909:10909'
       - '10911:10911'
