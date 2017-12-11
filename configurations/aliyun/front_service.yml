@@ -1,0 +1,36 @@
+trade-web-g1:
+  image: 'registry.cn-shenzhen.aliyuncs.com/bwin/tomcat_7_jdk8:deb_1.1'
+  oom-kill-disable: true
+  cpu_shares: 200 #2核
+  mem_limit: 3221225472 #2GB
+  ports:
+    - '80:8080/tcp'
+  restart: always
+  environment:
+    - LANG=en_US.UTF-8
+    - CATALINA_HOME=/usr/local/tomcat
+    - TOMCAT_NATIVE_LIBDIR=/usr/local/tomcat/native-jni-lib
+    - LD_LIBRARY_PATH=/usr/local/tomcat/native-jni-lib
+    - 'availability:az==~2'
+    - CATALINA_OPTS=-Xmx2048m -Xms1024m -XX:MaxNewSize=384m -XX:MaxPermSize=128m
+  labels:
+    aliyun.scale: '2'
+    aliyun.lb.port_8080: 'tcp://trade_web_lb_g1:80'
+    aliyun.rolling_updates: 'true'
+    aliyun.probe.url: 'http://container:8080/check.htm'
+    aliyun.probe.timeout_seconds: '10'
+    aliyun.probe.initial_delay_seconds: '10'
+    com.docker.swarm.reschedule-policies: '["on-node-failure"]'
+    aliyun.log_store_dbstdout: 'stdout'
+    aliyun.auto_scaling.step: '2'
+    aliyun.auto_scaling.min_instances: '2'
+    aliyun.auto_scaling.max_instances: '20'
+    aliyun.auto_scaling.max_cpu: '70'
+    aliyun.auto_scaling.min_cpu: '40'
+  volumes:
+    - '/mnt/acs_mnt/nas/files/trade12062044.war:/usr/local/tomcat/webapps/ROOT.war:ro'
+    - '/mnt/acs_mnt/nas/files/nginx.conf:/etc/nginx/nginx.conf:ro'
+    - '/mnt/acs_mnt/nas/files/tomcat/server.xml:/usr/local/tomcat/conf/server.xml:ro'
+    #- '/mnt/acs_mnt/nas/files/static:/home/static:ro'
+    #- '/mnt/acs_mnt/nas/files/www:/etc/nginx/html:ro'
+    #- '/mnt/acs_mnt/nas/files/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro'

@@ -1,0 +1,19 @@
+mysql-router:
+  image: 'registry.cn-shenzhen.aliyuncs.com/bwin/mysql_router:1.0'
+  oom-kill-disable: true
+  ports:
+    - '7001:7001/tcp'
+    - '7002:7002/tcp'
+  restart: always
+  environment:
+    - 'availability:az==~2'
+  labels:
+    aliyun.lb.port_7001: 'tcp://mysql-router:7001'
+    aliyun.lb.port_7002: 'tcp://mysql-router:7002'
+    aliyun.rolling_updates: 'true'
+    com.docker.swarm.reschedule-policies: '["on-node-failure"]'
+    aliyun.log_store_dbstdout: stdout
+    aliyun.scale: '4'
+
+  volumes:
+    - '/mnt/acs_mnt/nas/files/mysql-router/mysqlrouter.conf:/etc/mysqlrouter/mlr.conf:ro'

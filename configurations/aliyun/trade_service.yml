@@ -1,0 +1,32 @@
+service-tomcat-v1:
+  #image: 'lihongwansui/tomcat:8-jdk-alpine'
+  image: 'registry.cn-shenzhen.aliyuncs.com/bwin/tomcat_7_jdk8:deb_1.1'
+  oom-kill-disable: true
+  mem_limit: 3221225472 #2GB
+  ports:
+    - '9999:8080/tcp'
+  restart: always
+  environment:
+    - LANG=C.UTF-8
+    - CATALINA_HOME=/usr/local/tomcat
+    - TOMCAT_NATIVE_LIBDIR=/usr/local/tomcat/native-jni-lib
+    - LD_LIBRARY_PATH=/usr/local/tomcat/native-jni-lib
+    - 'availability:az==~2'
+    - CATALINA_OPTS=-Xmx2048m -Xms1024m
+  labels:
+    aliyun.scale: '4'
+    aliyun.lb.port_8080: 'http://trade_lb:80'
+    aliyun.rolling_updates: 'true'
+    aliyun.probe.url: 'http://container:8080/trade-service/check.htm'
+    aliyun.probe.timeout_seconds: '10'
+    aliyun.probe.initial_delay_seconds: '30'
+    com.docker.swarm.reschedule-policies: '["on-node-failure"]'
+    aliyun.log_store_dbstdout: 'stdout'
+    aliyun.auto_scaling.step: '2'
+    aliyun.auto_scaling.min_instances: '4'
+    aliyun.auto_scaling.max_instances: '20'
+    aliyun.auto_scaling.max_cpu: '70'
+    aliyun.auto_scaling.min_cpu: '40'
+  volumes:
+    - '/mnt/acs_mnt/nas/files/trade-service12012129.war:/usr/local/tomcat/webapps/trade-service.war:ro'
+    - '/mnt/acs_mnt/nas/files/tomcat/server.xml:/usr/local/tomcat/conf/server.xml:ro'

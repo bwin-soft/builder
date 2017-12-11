@@ -1,0 +1,36 @@
+back-service:
+  image: 'registry.cn-shenzhen.aliyuncs.com/bwin/nginx_tomcat:deb_1.0'
+  oom-kill-disable: true
+  cpu_shares: 100 #1核
+  mem_limit: 2147483648 #2GB
+  ports:
+    - '8080:80/tcp'
+  restart: always
+  environment:
+    - LANG=en_US.UTF-8
+    - CATALINA_HOME=/usr/local/tomcat
+    - TOMCAT_NATIVE_LIBDIR=/usr/local/tomcat/native-jni-lib
+    - LD_LIBRARY_PATH=/usr/local/tomcat/native-jni-lib
+    - 'availability:az==~2'
+    - CATALINA_OPTS=-Xmx1500m -Xms512m
+    - JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
+  labels:
+    aliyun.scale: '2'
+    aliyun.lb.port_80: 'http://back:8080'
+    aliyun.rolling_updates: 'true'
+    #aliyun.probe.url: 'http://container:8080/check.htm'
+    #aliyun.probe.timeout_seconds: '10'
+    #aliyun.probe.initial_delay_seconds: '10'
+    com.docker.swarm.reschedule-policies: '["on-node-failure"]'
+    aliyun.log_store_dbstdout: 'stdout'
+    aliyun.auto_scaling.step: '2'
+    aliyun.auto_scaling.min_instances: '1'
+    aliyun.auto_scaling.max_instances: '20'
+    aliyun.auto_scaling.max_cpu: '70'
+    aliyun.auto_scaling.min_cpu: '40'
+  volumes:
+    - '/mnt/acs_mnt/nas/files/back/bank12051449.war:/usr/local/tomcat/webapps/trade.war:ro'
+    - '/mnt/acs_mnt/nas/files/back/nginx.conf:/etc/nginx/nginx.conf:ro'
+    #- '/mnt/acs_mnt/nas/files/static:/home/static:ro'
+    - '/mnt/acs_mnt/nas/files/back/images/:/mnt/images/:rw'
+    - '/mnt/acs_mnt/nas/files/tomcat/server.xml:/usr/local/tomcat/conf/server.xml:ro'
