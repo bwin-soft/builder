@@ -1,0 +1,69 @@
+# nginx:
+#   image: 'nginx:latest'
+#   ports:
+#     - '8000:80/tcp'
+#   restart: always
+#   volumes:
+#     - '/mnt/acs_mnt/nas/files/nginx_lb_level2/nginx.conf:/etc/nginx/nginx.conf:ro'
+#     - '/mnt/acs_mnt/nas/files/static:/home/static:ro'
+
+back-service:
+  image: 'registry.cn-shenzhen.aliyuncs.com/bwin/nginx_tomcat:deb_1.0'
+  oom-kill-disable: true
+  cpu_shares: 100 #1核
+  mem_limit: 2147483648 #2GB
+  environment:
+    - LANG=en_US.UTF-8
+    - CATALINA_OPTS=-Xmx2048m -Xms1024m -XX:MaxNewSize=384m -XX:MaxPermSize=128m
+  ports:
+    - '8080:80/tcp'
+  restart: always
+  volumes:
+    - '/mnt/acs_mnt/nas/files/back/bank.war:/usr/local/tomcat/webapps/trade.war:ro'
+    - '/mnt/acs_mnt/nas/files/back/nginx.conf:/etc/nginx/nginx.conf:ro'
+    - '/mnt/acs_mnt/nas/files/back/images/:/mnt/images/:rw'
+    - '/mnt/acs_mnt/nas/files/tomcat/server.xml:/usr/local/tomcat/conf/server.xml:ro'
+
+trade-web:
+  image: 'registry.cn-shenzhen.aliyuncs.com/bwin/nginx_tomcat:deb_1.0'
+  oom-kill-disable: true
+  cpu_shares: 200 #2核
+  mem_limit: 3221225472 #2GB
+  environment:
+    - LANG=en_US.UTF-8
+    - CATALINA_OPTS=-Xmx2048m -Xms1024m -XX:MaxNewSize=384m -XX:MaxPermSize=128m
+  ports:
+    - '80:80/tcp'
+  restart: always
+  volumes:
+    - '/mnt/acs_mnt/nas/files/trade.war:/usr/local/tomcat/webapps/ROOT.war:ro'
+    - '/mnt/acs_mnt/nas/files/nginx.conf:/etc/nginx/nginx.conf:ro'
+    - '/mnt/acs_mnt/nas/files/tomcat/server.xml:/usr/local/tomcat/conf/server.xml:ro'
+
+wechat-service:
+  image: 'registry.cn-shenzhen.aliyuncs.com/bwin/tomcat_7_jdk8:deb_1.1'
+  oom-kill-disable: true
+  mem_limit: 2147483648 #2GB
+  environment:
+    - LANG=en_US.UTF-8
+    - CATALINA_OPTS=-Xmx2048m -Xms1024m -XX:MaxNewSize=384m -XX:MaxPermSize=128m
+  ports:
+    - '8088:8080/tcp'
+  restart: always
+  volumes:
+    - '/mnt/acs_mnt/nas/files/wechat-service.war:/usr/local/tomcat/webapps/wechat-service.war:ro'
+    - '/mnt/acs_mnt/nas/files/tomcat/server.xml:/usr/local/tomcat/conf/server.xml:ro'
+
+trade-service:
+  image: 'registry.cn-shenzhen.aliyuncs.com/bwin/tomcat_7_jdk8:deb_1.1'
+  oom-kill-disable: true
+  mem_limit: 3221225472 #2GB
+  environment:
+    - LANG=en_US.UTF-8
+    - CATALINA_OPTS=-Xmx2048m -Xms1024m -XX:MaxNewSize=384m -XX:MaxPermSize=128m
+  ports:
+    - '9999:8080/tcp'
+  restart: always
+  volumes:
+    - '/mnt/acs_mnt/nas/files/trade-service12111723.war:/usr/local/tomcat/webapps/trade-service.war:ro'
+    - '/mnt/acs_mnt/nas/files/tomcat/server.xml:/usr/local/tomcat/conf/server.xml:ro'
